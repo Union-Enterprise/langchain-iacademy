@@ -17,7 +17,6 @@ def pdf_to_retriver(archive_name):
         return pdf_text
 
     text = get_text_from_pdf()
-    print(text)
 
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
