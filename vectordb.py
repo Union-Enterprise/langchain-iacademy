@@ -14,10 +14,21 @@ def pdf_to_retriver(archive_name):
             for page in reader.pages:
                 content = page.extract_text()
                 pdf_text += " "+content
+
+        with open(f"{archive_name}.txt", "w", encoding="utf-8") as archive:
+            archive.write(pdf_text)
         return pdf_text
 
-    text = get_text_from_pdf()
+    return to_retriver(get_text_from_pdf())
 
+def txt_to_retriver(archive_name):
+    text = ''
+    with open(f'contexts/{archive_name}.txt', 'r', encoding="utf-8") as archive:
+        text = archive.read()
+    
+    return to_retriver(text)
+
+def to_retriver(text):
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
     def count_tokens(text: str) -> int:
@@ -28,7 +39,7 @@ def pdf_to_retriver(archive_name):
         chunk_overlap = 24,
         length_function = count_tokens,
     )
-
+    
     chunks = text_splitter.create_documents([text])
 
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
