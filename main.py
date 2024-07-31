@@ -1,24 +1,30 @@
 from flask import Flask, request, jsonify
-from timeout_decorator import timeout, TimeoutError
+import json
 import os
 from dotenv import load_dotenv
 
 from user_doubts import user_doubt
+
+#initial setup server
+from rag import LLMlearning
+geometria = LLMlearning('geometria')
+models = {'geometria': geometria}
+
 
 load_dotenv()
 
 app = Flask(__name__)
 
 @app.route('/doubt', methods=["POST"])
-@timeout(60)
 def doubt():
     data = request.get_json()
     try:
-        return user_doubt(input=data['input'], context=data['context'], previous=data['previous'])
-    except:
-        return user_doubt(input=data['input'], context=data['context'])
-
-
+        json_string = user_doubt(input_user=data['input'], context=data['context'], previous=data['previous'])
+    except KeyError:
+        json_string = user_doubt(input_user=data['input'], context=data['context'])
+    
+    json_object = json.loads(json_string)
+    return jsonify(json.dumps(json_object, indent=4, ensure_ascii=False))
 
 
 if __name__ == '__main__':
