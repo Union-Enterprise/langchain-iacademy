@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 import json
 import os
 from dotenv import load_dotenv
@@ -22,7 +22,7 @@ def doubt():
         json_string = user_doubt(input_user=data['input'], context=data['context'])
     
     json_object = json.loads(json_string)
-    return jsonify(json.dumps(json_object, indent=4, ensure_ascii=False))
+    return json.dumps(json_object, ensure_ascii=False)
 
 
 if __name__ == '__main__':
