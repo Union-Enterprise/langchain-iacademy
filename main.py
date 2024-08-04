@@ -3,13 +3,11 @@ import json
 import os
 from dotenv import load_dotenv
 
+from initial_setup import setup
 from user_doubts import user_doubt
 
 #initial setup server
-from rag import LLMlearning
-geometria = LLMlearning('geometria')
-models = {'geometria': geometria}
-
+models = setup()
 
 load_dotenv()
 
