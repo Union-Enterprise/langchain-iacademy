@@ -20,8 +20,13 @@ def doubt():
         json_string = user_doubt(input_user=data['input'], context=data['context'], previous=data['previous'])
     except KeyError:
         json_string = user_doubt(input_user=data['input'], context=data['context'])
-    
-    json_object = json.loads(json_string)
+
+    try:
+        json_object = json.loads(json_string)
+    except json.JSONDecodeError:
+        print("Erro ao decodificar JSON: resposta vazia ou malformada")
+        json_object = {}
+
     return json.dumps(json_object, ensure_ascii=False)
 
 

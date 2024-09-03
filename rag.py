@@ -19,27 +19,31 @@ class LLMlearning:
 
         from ia_model import llm
 
-        default_local_prompt = default_prompt
-        if prompt:
-            default_local_prompt = "{prompt}"
 
+        default_local_prompt = prompt if prompt else default_prompt
 
-        prompt_chat = ChatPromptTemplate.from_template(default_local_prompt+"""
-                                         \n
-                                         \nContexto: {context}
-                                         \nContexto 2 (uma pergunta feita por usuário e uma resposta gerada por você:
-                                         \nPergunta anterior: {previous_question} 
-                                         \nResposta anterior: {previous_response})\n
-                                         
-                                         Pergunta: {input}
-                                         """)
+        prompt_chat = ChatPromptTemplate.from_template(
+            default_local_prompt + """
+            \nContexto: {context}
+            \nContexto 2 (uma pergunta feita por usuário e uma resposta gerada por você:
+            \nPergunta anterior: {previous_question} 
+            \nResposta anterior: {previous_response})\n
+            \nPergunta: {input}
+            """
+        )
 
         document_chain = create_stuff_documents_chain(llm, prompt_chat)
-        retriver_chain = create_retrieval_chain(self.retriver, document_chain)
+        retriever_chain = create_retrieval_chain(self.retriver, document_chain)
         
-        response = retriver_chain.invoke({"input": input_user, "previous_question": question_context["question"], "previous_response": question_context["response"]})
+        response = retriever_chain.invoke({
+            "input": input_user,
+            "previous_question": question_context["question"],
+            "previous_response": question_context["response"],
+            "context": self.context
+        })
 
         return response['answer']
+
 
 if __name__ == '__main__':
     geometria = LLMlearning('geometria')

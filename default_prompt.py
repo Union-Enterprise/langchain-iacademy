@@ -17,5 +17,7 @@ default_prompt = """
         ...
         Fórmulas: "..."
     ]
+    No JSON não precisa usar "Tópico 1, Tópico 2..." como chaves, utilize o próprio titulo.
+    Em hipótese alguma retorne o JSON entre "``````"
     O número de topicos de explicações pode variar conforme sua necessidade.
 """
