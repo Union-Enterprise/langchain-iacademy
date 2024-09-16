@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 from initial_setup import setup
-from user_doubts import user_doubt
+from generation import user_doubt, generate_content
 
 #initial setup server
 models = setup()
@@ -13,13 +13,27 @@ load_dotenv()
 
 app = Flask(__name__)
 
+@app.route('/generate', methods=["POST"])
+def generate():
+    data = request.get_json()
+
+    json_string = generate_content(data['input'], models)
+
+    try:
+        json_object = json.loads(json_string)
+    except json.JSONDecodeError:
+        print("Erro ao decodificar JSON: resposta vazia ou malformada")
+        json_object = {}
+
+    return json.dumps(json_object, ensure_ascii=False)
+
 @app.route('/doubt', methods=["POST"])
 def doubt():
     data = request.get_json()
     try:
-        json_string = user_doubt(input_user=data['input'], context=data['context'], previous=data['previous'])
+        json_string = user_doubt(input_user=data['input'], context=data['context'], previous=data['previous'], models=models)
     except KeyError:
-        json_string = user_doubt(input_user=data['input'], context=data['context'])
+        json_string = user_doubt(input_user=data['input'], context=data['context'], models=models)
 
     try:
         json_object = json.loads(json_string)
