@@ -13,6 +13,9 @@ def user_doubt(input_user, context, previous={"question": None, "response": None
     else:
         return "Por favor, pergunte algo pertinente ao conteúdo."
 
+def generate_quiz(pdf, models):
+    return models['geometria'].generate_quiz_by_pdf(pdf)
+
 def generate_content(input_system, models):
     return models['geometria'].generate(input_system)
 
