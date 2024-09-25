@@ -61,8 +61,10 @@ class LLMlearning:
         all_questions = []
         current_question = None
         question_num = 1
+
+        question_start_pattern = r"(QUESTÃO\s+\d+)"
         description_pattern = r"(Descrição (?:da|do) (?:figura|gráfico|mapa|quadrinho|imagem|quadro|esquema|alternativas|foto|tabela):.*?\(Fim da descrição\))"
-        alternatives_pattern = r"\b([a-eA-E])\.\s+"
+        alternatives_pattern = r"\b([a-e])\.\s+"
 
         for page_num in range(len(doc)):
             page = doc.load_page(page_num)
@@ -70,9 +72,13 @@ class LLMlearning:
 
             page_text = self.clean_text(page_text)
 
-            if current_question:
-                current_question["questao"] += f" {page_text}"
-            else:
+            question_starts = re.findall(question_start_pattern, page_text)
+
+            if question_starts:
+                if current_question:
+                    all_questions.append(current_question)
+                    question_num += 1
+
                 current_question = {
                     "titulo": f"Questão {question_num}",
                     "descricao_figura": [],
@@ -82,9 +88,12 @@ class LLMlearning:
                     "alternativas": []
                 }
 
+            if current_question:
+                current_question["questao"] += f" {page_text}"
+
             descriptions = re.findall(description_pattern, page_text, re.DOTALL)
 
-            if descriptions:
+            if descriptions and current_question:
                 for description in descriptions:
                     cleaned_description = self.clean_text(description)
                     if "alternativas" in cleaned_description:
@@ -95,30 +104,36 @@ class LLMlearning:
                     image_paths, img_counter = self.extract_images_from_page(page, question_num, img_counter=img_counter)
                     current_question["imagens"].extend(image_paths)
 
-            for i in range(len(current_question["descricao_figura"])):
-                if i < len(current_question["imagens"]):
-                    imagem_tag = f"<imagem {current_question['imagens'][i]}>"
-                    current_question["questao"] = current_question["questao"].replace(current_question["descricao_figura"][i], imagem_tag)
-
             alternatives_split = re.split(alternatives_pattern, page_text)
-            if not current_question["questao"]:
+            if current_question and not current_question["questao"]:
                 current_question["questao"] = alternatives_split[0].strip()
 
             alternatives_found = False
+            expected_alternative = 'a'
+            valid_alternatives = []
+            
             for j in range(1, len(alternatives_split) - 1, 2):
-                alternative_letter = alternatives_split[j]
+                alternative_letter = alternatives_split[j].lower()
                 alternative_text = alternatives_split[j + 1].strip()
-                current_question["alternativas"].append(f"{alternative_letter}. {alternative_text}")
-                alternatives_found = True
 
-            if alternatives_found:
-                for alt in current_question["alternativas"]:
+                if current_question and alternative_letter == expected_alternative:
+                    current_question["alternativas"].append(f"{alternative_letter}. {alternative_text}")
+                    valid_alternatives.append(f"{alternative_letter}. {alternative_text}")
+                    alternatives_found = True
+                    expected_alternative = chr(ord(expected_alternative) + 1) 
+                else:
+                    break
+
+            if current_question:
+                for i in range(len(current_question["descricao_figura"])):
+                    if i < len(current_question["imagens"]):
+                        imagem_tag = f"<imagem {current_question['imagens'][i]}>"
+                        current_question["questao"] = current_question["questao"].replace(current_question["descricao_figura"][i], imagem_tag)
+
+            if alternatives_found and current_question:
+                for alt in valid_alternatives:
                     alt_escaped = re.escape(alt)
                     current_question["questao"] = re.sub(rf"\s*{alt_escaped}\s*", "", current_question["questao"])
-
-                all_questions.append(current_question)
-                current_question = None  
-                question_num += 1  
 
         if current_question and current_question["questao"]:
             all_questions.append(current_question)
