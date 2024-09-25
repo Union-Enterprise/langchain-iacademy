@@ -91,7 +91,7 @@ class LLMlearning:
             if current_question:
                 current_question["questao"] += f" {page_text}"
 
-            descriptions = re.findall(description_pattern, page_text, re.DOTALL)
+            descriptions = re.findall(description_pattern, page_text, re.DOTALL) #ta aq o cu do problema esssa porra nao vai ela ta tentando catar descrição na msm pagina do pdf soq esse cu nao consegue catar em outras paginas ele nao identifica regex testado pagina por pagina nao texto corrido tentar separar todas as descriçoes antes dessa bosta rodar dai eu ja vou ter tudo separad o em texto corrido desse diabo de função do cacete eu to ficando maluco alguem me ajuda dessa bosta de tcc estou sentindo minhas forças indo embora. grato
 
             if descriptions and current_question:
                 for description in descriptions:
