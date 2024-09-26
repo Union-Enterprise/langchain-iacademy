@@ -4,13 +4,20 @@ import fitz
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from pprint import pprint
+from langchain import LLMChain
+from langchain.prompts import PromptTemplate
+import ast
+# from langchain.llms import Gemini
+
+from ia_model import llm
 
 load_dotenv()
 
 class LLMlearning:
     def __init__(self, context):
         self.context = context
-
+        self.llm = llm
+        
     def connect_to_mongodb(self):
         client = MongoClient(os.environ.get("CONNECTION_STRING"))
         db = client['iacademy']
@@ -82,22 +89,23 @@ class LLMlearning:
                 current_question = {
                     "titulo": f"Questão {question_num}",
                     "descricao_figura": [],
-                    "descricao_alternativas": "",
+                    "alternativa_descricao": "",
                     "questao": "",
                     "imagens": [],
-                    "alternativas": []
+                    "alternativas": [],
+                    "alternativa_correta": "" 
                 }
 
             if current_question:
                 current_question["questao"] += f" {page_text}"
 
-            descriptions = re.findall(description_pattern, page_text, re.DOTALL) #ta aq o cu do problema esssa porra nao vai ela ta tentando catar descrição na msm pagina do pdf soq esse cu nao consegue catar em outras paginas ele nao identifica regex testado pagina por pagina nao texto corrido tentar separar todas as descriçoes antes dessa bosta rodar dai eu ja vou ter tudo separad o em texto corrido desse diabo de função do cacete eu to ficando maluco alguem me ajuda dessa bosta de tcc estou sentindo minhas forças indo embora. grato
+            descriptions = re.findall(description_pattern, page_text, re.DOTALL)
 
             if descriptions and current_question:
                 for description in descriptions:
                     cleaned_description = self.clean_text(description)
                     if "alternativas" in cleaned_description:
-                        current_question["descricao_alternativas"] = cleaned_description
+                        current_question["alternativa_descricao"] = cleaned_description
                     else:
                         current_question["descricao_figura"].append(cleaned_description)
 
@@ -140,13 +148,82 @@ class LLMlearning:
 
         return all_questions
 
-
     def generate_quiz_by_pdf(self, pdf_path):
         questions = self.extract_questions_from_pdf(pdf_path)
         return questions
 
-if __name__ == '__main__':
-    geometria = LLMlearning('geometria')
-    quiz = geometria.generate_quiz_by_pdf("quiz.pdf")
+    def send_questions_to_gemini(self, questions):
+        for question in questions:
+            prompt_template = """{titulo}\n\nQuestão: {questao}\n\nImagens: {imagens}\n\nAlternativas: {alternativas}\n\nSe já houver a alternativa correta, apenas explique a resposta com base nas informações fornecidas, caso contrário, resolva a questão e forneça a alternativa correta mencionando na explicação no exato padrão: ...'alternativa correta é b.'... ou ...'alternativa correta é c.'... e assim por diante. Além disso, tudo que puder, deixe no padrão matemático, por exemplo, caso encontre 'y é igual a 250 vezes x', converta para 'y = 250*x', o mesmo para logs, raizes, frações e outros simbolos e termos matemáticos"""
 
-    pprint(quiz)
+            prompt = prompt_template.format(
+                titulo=question["titulo"],
+                questao=question["questao"],
+                imagens=', '.join(question["descricao_figura"]),
+                alternativas=', '.join(question["alternativas"])
+            )
+
+            chain = LLMChain(
+                llm=self.llm,
+                prompt=PromptTemplate(
+                    input_variables=["titulo", "questao", "descricao_figura", "alternativas"],
+                    template=prompt,
+                ),
+            )
+
+            while True:
+                try:
+                    response = chain.invoke({
+                        "titulo": question["titulo"],
+                        "questao": question["questao"],
+                        "imagens": question["descricao_figura"],
+                        "alternativas": question["alternativas"]
+                    })
+
+                    if isinstance(response, str):
+                        try:
+                            response = ast.literal_eval(response)
+                        except (ValueError, SyntaxError) as e:
+                            print(f"Erro ao converter a string em dicionário: {e}")
+                            continue
+
+                    alternativa_correta = self.extract_correct_alternative(response.get("text", ""))
+
+                    if "text" in response:
+                        response["resolucao"] = response.pop("text")
+                    
+                    if alternativa_correta:
+                        response["alternativa_correta"] = alternativa_correta
+
+                    question.update(response)
+
+                    break
+                except Exception as e:
+                    print(f"Erro ao processar a questão {question['titulo']}: {e}")
+                    continue
+
+            print(f"Resposta para {question['titulo']}:")
+            pprint(question)
+
+    def extract_correct_alternative(self, text):
+        patterns = [
+            r'alternativa correta é ([*]*[a-e][*]*)\.',                
+            r'alternativa correta é a letra ([*]*[a-e][*]*)\.',        
+            r'alternativa correta é "([*]*[a-e][*]*)"',                
+            r'a resposta correta é a alternativa ([*]*[a-e][*]*)\.',   
+            r'a resposta correta é "([*]*[a-e][*]*)"',                 
+            r'a resposta correta é ([*]*[a-e][*]*)',                   
+            r'a alternativa correta é a letra ([*]*[a-e][*]*)\.'       
+        ]
+
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                return match.group(1).replace('*', '').strip()
+        
+        return None
+
+if __name__ == "__main__":
+    llm_learning = LLMlearning('geometria')
+    questions = llm_learning.generate_quiz_by_pdf('quiz.pdf')
+    llm_learning.send_questions_to_gemini(questions)
