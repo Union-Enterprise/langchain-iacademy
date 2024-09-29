@@ -28,48 +28,103 @@ class LLMlearning:
         db = client['iacademy'] 
         return db
     
-    def generate(self, input_system, prompt=None):
+    def generate_roadmap(self):
+        prompt_template = """gere um dicionario em python que possua todos os assuntos que caem no enem em matematica, por exemplo, no seguinte padrao: (não deixe de gerar tudo dentro da chave "conteudos")
+        conteudos: {{
+            "geometria plana": {{
+                title: "Geometria Plana"
+                topics: {{
+                    "quadrados": {{(deixe vazio)}},
+                    "triangulos": {{(deixe vazio)}}, ...
+                }}, (em ordem de dificuldade)
+                description: "a geometria plana é um assuntos que aborda as figuras bidimensionais..." (algo entre 10 linhas de conteudo),
+                tags: ["Geometria", "Áreas", "Bidimensionais" ... (umas 5 tags ou mais)],
+                level: "básico"
+            }},
+            "geometria espacial": {{
+                title: "Geometria Espacial"
+                topics: {{
+                    "cubos": {{(deixe vazio)}},
+                    "piramides": {{(deixe vazio)}},
+                    "prismas": {{(deixe vazio)}}...
+                }}, (em ordem de dificuldade)
+                description: "a geometria espacial é um assuntos que aborda as figuras tridimensionais..." (algo entre 10 linhas de conteudo),
+                tags: ["Geometria", "Volumes", "Tridimensionais" ... (umas 5 tags ou mais)],
+                level: "intermediário"
+            }}
+        }}  
+        em hipotese alguma envolva sua resposta em "``````". 
+        eu quero um json como resposta, ou seja, retire as quebras de linha."""
+
+        prompt = PromptTemplate(template=prompt_template, input_variables=[])
+        chain = LLMChain(llm=llm, prompt=prompt)
+
+        while True:
+            while True:
+                try:
+                    content = chain.invoke({})
+                    break
+                except:
+                    continue
+            try:
+                json_object = json.loads(content['text'])
+                json_object['conteudos']
+                break
+            except:
+                print("ia ta moscano e n ta mandando o roadmap em json mas vai gerar dnv rlx")
+                json_object = {}
+                continue
+        
+        self.roadmap = json_object
+        self.generate_from_roadmap()
+
+
+    def generate_from_roadmap(self, prompt=None):
         db = self.connect_to_mongodb()
         topic_collection = db['topics']
         default_local_prompt = prompt if prompt else default_prompt
+
         prompt_chat = ChatPromptTemplate.from_template(
             default_local_prompt + """
             \nPergunta: {input}
             """
         )
-        formatted_prompt = prompt_chat.format(input=input_system)
 
-        while True:
-            while True:
-                try:
-                    response = llm.invoke(formatted_prompt)
-                    break
-                except: 
-                    continue
+        for topic in list(self.roadmap['conteudos'].keys()):
+            pprint(list(self.roadmap['conteudos'][topic]['topics'].keys()))
+            for subject in list(self.roadmap['conteudos'][topic]['topics'].keys()):
+                formatted_prompt = prompt_chat.format(input=f"gere tudo sobre {subject} - {topic}")
+                while True:
+                    while True:
+                        try:
+                            response = llm.invoke(formatted_prompt)
+                            break
+                        except: 
+                            continue
+                    try:
+                        json_object = json.loads(response.content)
+                    except json.JSONDecodeError:
+                        print("ia ta moscano e n ta mandando o conteudo em json mas vai gerar dnv rlx")
+                        json_object = {}
+                        continue
 
-            try:
-                json_object = json.loads(response.content)
-            except json.JSONDecodeError:
-                print("ia ta moscano e n ta mandando em json mas vai gerar dnv rlx")
-                json_object = {}
-                continue
+                    try:
+                        tags = json_object.pop("Tags")
+                        titulo = json_object.pop("Titulo")
+                        topic_data = {
+                            'title': titulo,
+                            'topic': topic,
+                            'content': json_object,
+                            'tags': tags,
+                            'views': 0,
+                        }
+                        self.roadmap['conteudos'][topic]['topics'][subject] = topic_data
+                        break
+                    except:
+                        continue
 
-            try:
-                tags = json_object.pop("Tags")
-                titulo = json_object.pop("Titulo")
-                topic_data = {
-                    'title': titulo,
-                    'topic': input_system,
-                    'content': json_object,
-                    'tags': tags,
-                    'views': 0,
-                }
-                break
-            except:
-                continue
-
-        topic_collection.insert_one(topic_data)
-        return response.content
+            topic_collection.insert_one(self.roadmap['conteudos'][topic])
+            # return response.content
     
     def extract_text_from_pdf(self, pdf_path):
         doc = fitz.open(pdf_path)
@@ -103,11 +158,11 @@ class LLMlearning:
         return image_paths, img_counter
 
     def replace_image_descriptions(self, page_text, descriptions, imagens):
-        for i, descricao in enumerate(descriptions):
+        for i, description in enumerate(descriptions):
             imagem_path = imagens[i] if i < len(imagens) else None
             if imagem_path:
                 imagem_tag = f"<imagem {imagem_path}>"
-                page_text = page_text.replace(descricao, imagem_tag)
+                page_text = page_text.replace(description, imagem_tag)
         return page_text
 
     def extract_questions_from_pdf(self, pdf_path):
@@ -136,8 +191,8 @@ class LLMlearning:
 
                 current_question = {
                     "titulo": f"Questão {question_num}",
-                    "descricao_figura": [],
-                    "alternativa_descricao": "",
+                    "description_figura": [],
+                    "alternativa_description": "",
                     "questao": "",
                     "imagens": [],
                     "alternativas": [],
@@ -153,9 +208,9 @@ class LLMlearning:
                 for description in descriptions:
                     cleaned_description = self.clean_text(description)
                     if "alternativas" in cleaned_description:
-                        current_question["alternativa_descricao"] = cleaned_description
+                        current_question["alternativa_description"] = cleaned_description
                     else:
-                        current_question["descricao_figura"].append(cleaned_description)
+                        current_question["description_figura"].append(cleaned_description)
 
                     image_paths, img_counter = self.extract_images_from_page(page, question_num, img_counter=img_counter)
                     current_question["imagens"].extend(image_paths)
@@ -181,10 +236,10 @@ class LLMlearning:
                     break
 
             if current_question:
-                for i in range(len(current_question["descricao_figura"])):
+                for i in range(len(current_question["description_figura"])):
                     if i < len(current_question["imagens"]):
                         imagem_tag = f"<imagem {current_question['imagens'][i]}>"
-                        current_question["questao"] = current_question["questao"].replace(current_question["descricao_figura"][i], imagem_tag)
+                        current_question["questao"] = current_question["questao"].replace(current_question["description_figura"][i], imagem_tag)
 
             if alternatives_found and current_question:
                 for alt in valid_alternatives:
@@ -208,14 +263,14 @@ class LLMlearning:
             prompt = prompt_template.format(
                 titulo=question["titulo"],
                 questao=question["questao"],
-                imagens=', '.join(question["descricao_figura"]),
+                imagens=', '.join(question["description_figura"]),
                 alternativas=', '.join(question["alternativas"])
             )
 
             chain = LLMChain(
                 llm=self.llm,
                 prompt=PromptTemplate(
-                    input_variables=["titulo", "questao", "descricao_figura", "alternativas"],
+                    input_variables=["titulo", "questao", "description_figura", "alternativas"],
                     template=prompt,
                 ),
             )
@@ -225,7 +280,7 @@ class LLMlearning:
                     response = chain.invoke({
                         "titulo": question["titulo"],
                         "questao": question["questao"],
-                        "imagens": question["descricao_figura"],
+                        "imagens": question["description_figura"],
                         "alternativas": question["alternativas"]
                     })
 
@@ -275,6 +330,6 @@ class LLMlearning:
 
 if __name__ == "__main__":
     llm_learning = LLMlearning('geometria')
-    questions = llm_learning.generate_quiz_by_pdf('quiz.pdf')
-    questions_with_resoluction = llm_learning.send_questions_to_gemini(questions)
 
+    llm_learning.generate_roadmap()
+    

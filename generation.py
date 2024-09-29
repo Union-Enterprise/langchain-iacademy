@@ -16,8 +16,8 @@ def user_doubt(input_user, context, previous={"question": None, "response": None
 def generate_quiz(pdf, models):
     return models['geometria'].generate_quiz_by_pdf(pdf)
 
-def generate_content(input_system, models):
-    return models['geometria'].generate(input_system)
+def generate_content(models):
+    return models['geometria'].generate_roadmap()
 
 if __name__ == '__main__':
     print(user_doubt(input_user="pode me explicar novamente o passo tres?", context='geometria',

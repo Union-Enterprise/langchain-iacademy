@@ -9,12 +9,12 @@ default_prompt = """
     Responda como JSON entre chaves e sem quebra de linha, no seguinte modelo:
         Titulo: "..."
         Tags: ["Geometria espacial", "Formas", ...]
-        Definição: "...",
-        Explicação: "...",
-        Tópico 1 de explicação: "...",
-        Tópico 2 de explicação: "...",
+        Definição: "(um texto explicativo)",
+        Explicação: "(um texto explicativo)",
+        Tópico 1 de explicação: "(um texto explicativo)",
+        Tópico 2 de explicação: "(um texto explicativo)",
         ...
-        Fórmulas: "..."
+        Fórmulas: "(um texto explicativo juntamente com as formulas e o que cada incognita representa)"
 
     Gere em média umas 5 tags que façam referencia ao conteúdo que você gerar (SEMPRE GERE AS TAGS, Não gere a tag "ENEM" nem "Matemática").
     No JSON não precisa usar "Tópico 1, Tópico 2..." como chaves, utilize o próprio título.
