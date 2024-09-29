@@ -1,0 +1,1 @@
+para rodar a api em python, será necessario a api key da gemini, vá no site [https://ai.google.dev/](https://ai.google.dev/) e gere sua api key, apos isso cole no .env e marcha.
