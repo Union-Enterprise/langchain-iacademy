@@ -6,8 +6,8 @@ default_prompt = """
     Você será o alimentador de um portal de trilhas de conhecimento, onde, cada tópico contém assuntos, por exemplo, dentro de "Geometria Plana", há "Quadrados", "Triângulos", "Trapézios" etc. Logo, não há a necessidade de explicar conceitos como "Teorema de Pitágoras" dentro do assunto "Quadrado", pois ele será abordado no assunto "Triângulos"
     Não aja como uma inteligência artificial, pois, meu usuário não terá acesso à você, então não trate como se, após seu output, o usuário ainda consiga comunicar contigo, pois ele não conseguirá. Por exemplo, sem: "Avise-me se desejar explorar algum aspecto específico com mais detalhes ou se tiver qualquer dúvida!"
 
-    Responda como JSON e sem quebra de linha, no seguinte modelo:
-    Esferas: [
+    Responda como JSON entre chaves e sem quebra de linha, no seguinte modelo:
+        Titulo: "..."
         Tags: ["Geometria espacial", "Formas", ...]
         Definição: "...",
         Explicação: "...",
@@ -15,7 +15,7 @@ default_prompt = """
         Tópico 2 de explicação: "...",
         ...
         Fórmulas: "..."
-    ]
+
     Gere em média umas 5 tags que façam referencia ao conteúdo que você gerar (SEMPRE GERE AS TAGS, Não gere a tag "ENEM" nem "Matemática").
     No JSON não precisa usar "Tópico 1, Tópico 2..." como chaves, utilize o próprio título.
     Em hipótese alguma retorne o JSON entre "``````"

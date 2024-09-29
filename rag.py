@@ -7,7 +7,12 @@ from pprint import pprint
 from langchain import LLMChain
 from langchain.prompts import PromptTemplate
 import ast
+import json
 # from langchain.llms import Gemini
+
+from langchain_core.prompts import ChatPromptTemplate
+from default_prompt import default_prompt
+from ia_model import llm
 
 from ia_model import llm
 
@@ -20,9 +25,52 @@ class LLMlearning:
         
     def connect_to_mongodb(self):
         client = MongoClient(os.environ.get("CONNECTION_STRING"))
-        db = client['iacademy']
+        db = client['iacademy'] 
         return db
+    
+    def generate(self, input_system, prompt=None):
+        db = self.connect_to_mongodb()
+        topic_collection = db['topics']
+        default_local_prompt = prompt if prompt else default_prompt
+        prompt_chat = ChatPromptTemplate.from_template(
+            default_local_prompt + """
+            \nPergunta: {input}
+            """
+        )
+        formatted_prompt = prompt_chat.format(input=input_system)
 
+        while True:
+            while True:
+                try:
+                    response = llm.invoke(formatted_prompt)
+                    break
+                except: 
+                    continue
+
+            try:
+                json_object = json.loads(response.content)
+            except json.JSONDecodeError:
+                print("ia ta moscano e n ta mandando em json mas vai gerar dnv rlx")
+                json_object = {}
+                continue
+
+            try:
+                tags = json_object.pop("Tags")
+                titulo = json_object.pop("Titulo")
+                topic_data = {
+                    'title': titulo,
+                    'topic': input_system,
+                    'content': json_object,
+                    'tags': tags,
+                    'views': 0,
+                }
+                break
+            except:
+                continue
+
+        topic_collection.insert_one(topic_data)
+        return response.content
+    
     def extract_text_from_pdf(self, pdf_path):
         doc = fitz.open(pdf_path)
         text = ""
@@ -153,6 +201,7 @@ class LLMlearning:
         return questions
 
     def send_questions_to_gemini(self, questions):
+        questions_vector = []
         for question in questions:
             prompt_template = """{titulo}\n\nQuestão: {questao}\n\nImagens: {imagens}\n\nAlternativas: {alternativas}\n\nSe já houver a alternativa correta, apenas explique a resposta com base nas informações fornecidas, caso contrário, resolva a questão e forneça a alternativa correta mencionando na explicação no exato padrão: ...'alternativa correta é b.'... ou ...'alternativa correta é c.'... e assim por diante. Além disso, tudo que puder, deixe no padrão matemático, por exemplo, caso encontre 'y é igual a 250 vezes x', converta para 'y = 250*x', o mesmo para logs, raizes, frações e outros simbolos e termos matemáticos"""
 
@@ -203,7 +252,8 @@ class LLMlearning:
                     continue
 
             print(f"Resposta para {question['titulo']}:")
-            pprint(question)
+            questions_vector.append(question)
+        return questions_vector
 
     def extract_correct_alternative(self, text):
         patterns = [
@@ -226,4 +276,5 @@ class LLMlearning:
 if __name__ == "__main__":
     llm_learning = LLMlearning('geometria')
     questions = llm_learning.generate_quiz_by_pdf('quiz.pdf')
-    llm_learning.send_questions_to_gemini(questions)
+    questions_with_resoluction = llm_learning.send_questions_to_gemini(questions)
+
