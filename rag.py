@@ -11,7 +11,7 @@ import json
 # from langchain.llms import Gemini
 
 from langchain_core.prompts import ChatPromptTemplate
-from default_prompt import default_prompt
+from defaults_prompts import content, roadmap, question_template
 from ia_model import llm
 
 from ia_model import llm
@@ -29,34 +29,7 @@ class LLMlearning:
         return db
     
     def generate_roadmap(self):
-        prompt_template = """gere um dicionario em python que possua todos os assuntos que caem no enem em matematica, por exemplo, no seguinte padrao: (não deixe de gerar tudo dentro da chave "conteudos")
-        conteudos: {{
-            "geometria plana": {{
-                title: "Geometria Plana"
-                topics: {{
-                    "quadrados": {{(deixe vazio)}},
-                    "triangulos": {{(deixe vazio)}}, ...
-                }}, (em ordem de dificuldade)
-                description: "a geometria plana é um assuntos que aborda as figuras bidimensionais..." (algo entre 10 linhas de conteudo),
-                tags: ["Geometria", "Áreas", "Bidimensionais" ... (umas 5 tags ou mais)],
-                level: "básico"
-            }},
-            "geometria espacial": {{
-                title: "Geometria Espacial"
-                topics: {{
-                    "cubos": {{(deixe vazio)}},
-                    "piramides": {{(deixe vazio)}},
-                    "prismas": {{(deixe vazio)}}...
-                }}, (em ordem de dificuldade)
-                description: "a geometria espacial é um assuntos que aborda as figuras tridimensionais..." (algo entre 10 linhas de conteudo),
-                tags: ["Geometria", "Volumes", "Tridimensionais" ... (umas 5 tags ou mais)],
-                level: "intermediário"
-            }}
-        }}  
-        em hipotese alguma envolva sua resposta em "``````". 
-        eu quero um json como resposta, ou seja, retire as quebras de linha."""
-
-        prompt = PromptTemplate(template=prompt_template, input_variables=[])
+        prompt = PromptTemplate(template=roadmap, input_variables=[])
         chain = LLMChain(llm=llm, prompt=prompt)
 
         while True:
@@ -82,7 +55,7 @@ class LLMlearning:
     def generate_from_roadmap(self, prompt=None):
         db = self.connect_to_mongodb()
         topic_collection = db['topics']
-        default_local_prompt = prompt if prompt else default_prompt
+        default_local_prompt = prompt if prompt else content
 
         prompt_chat = ChatPromptTemplate.from_template(
             default_local_prompt + """
@@ -124,7 +97,6 @@ class LLMlearning:
                         continue
 
             topic_collection.insert_one(self.roadmap['conteudos'][topic])
-            # return response.content
     
     def extract_text_from_pdf(self, pdf_path):
         doc = fitz.open(pdf_path)
@@ -256,11 +228,11 @@ class LLMlearning:
         return questions
 
     def send_questions_to_gemini(self, questions):
+        db = self.connect_to_mongodb()
+        topic_collection = db['quizes']
         questions_vector = []
         for question in questions:
-            prompt_template = """{titulo}\n\nQuestão: {questao}\n\nImagens: {imagens}\n\nAlternativas: {alternativas}\n\nSe já houver a alternativa correta, apenas explique a resposta com base nas informações fornecidas, caso contrário, resolva a questão e forneça a alternativa correta mencionando na explicação no exato padrão: ...'alternativa correta é b.'... ou ...'alternativa correta é c.'... e assim por diante. Além disso, tudo que puder, deixe no padrão matemático, por exemplo, caso encontre 'y é igual a 250 vezes x', converta para 'y = 250*x', o mesmo para logs, raizes, frações e outros simbolos e termos matemáticos"""
-
-            prompt = prompt_template.format(
+            prompt = question_template.format(
                 titulo=question["titulo"],
                 questao=question["questao"],
                 imagens=', '.join(question["description_figura"]),
@@ -286,7 +258,7 @@ class LLMlearning:
 
                     if isinstance(response, str):
                         try:
-                            response = ast.literal_eval(response)
+                            response = ast.literal_eval(response["resolucao"])
                         except (ValueError, SyntaxError) as e:
                             print(f"Erro ao converter a string em dicionário: {e}")
                             continue
@@ -299,15 +271,29 @@ class LLMlearning:
                     if alternativa_correta:
                         response["alternativa_correta"] = alternativa_correta
 
-                    question.update(response)
+                    string_json = ' '.join(response['resolucao'].replace('```python\n', '').replace('```', '').replace(',\n', ',').replace("\\", "\\\\").replace('json', "").replace("\\\"", "\"").split())
+                    
+                    questao_dict = json.loads(string_json)
 
+                    data = {
+                        'titulo': response['titulo'],
+                        'questao': questao_dict['questao'],
+                        'explicacao': questao_dict['explicacao'],
+                        'alternativa_correta': response['alternativa_correta'],
+                        'alternativas': response['alternativas'],
+                        'imagens': question['imagens'],
+                        'descricao_figuras': response['imagens']
+                    }
+
+                    question.update(data)
+                    questions_vector.append(data)
+
+                    topic_collection.insert_one(data)
                     break
                 except Exception as e:
                     print(f"Erro ao processar a questão {question['titulo']}: {e}")
                     continue
-
-            print(f"Resposta para {question['titulo']}:")
-            questions_vector.append(question)
+        
         return questions_vector
 
     def extract_correct_alternative(self, text):
@@ -331,5 +317,7 @@ class LLMlearning:
 if __name__ == "__main__":
     llm_learning = LLMlearning('geometria')
 
+    # quiz = llm_learning.extract_questions_from_pdf('quiz.pdf')
+    # llm_learning.send_questions_to_gemini(quiz)
+
     llm_learning.generate_roadmap()
-    
