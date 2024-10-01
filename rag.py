@@ -22,6 +22,7 @@ class LLMlearning:
     def __init__(self, context):
         self.context = context
         self.llm = llm
+        self.simple_roadmap = {}
         
     def connect_to_mongodb(self):
         client = MongoClient(os.environ.get("CONNECTION_STRING"))
@@ -49,6 +50,7 @@ class LLMlearning:
                 continue
         
         self.roadmap = json_object
+        # self.simple_roadmap = self.roadmap['conteudos'].keys()
         self.generate_from_roadmap()
 
 
@@ -64,8 +66,14 @@ class LLMlearning:
         )
 
         for topic in list(self.roadmap['conteudos'].keys()):
-            pprint(list(self.roadmap['conteudos'][topic]['topics'].keys()))
+            # pprint(list(self.roadmap['conteudos'][topic]['topics'].keys()))
+            print(topic)
             for subject in list(self.roadmap['conteudos'][topic]['topics'].keys()):
+                print("- "+subject)
+                try:
+                    self.simple_roadmap[topic].append(subject)
+                except:
+                    self.simple_roadmap[topic] = [subject]
                 formatted_prompt = prompt_chat.format(input=f"gere tudo sobre {subject} - {topic}")
                 while True:
                     while True:
@@ -231,18 +239,23 @@ class LLMlearning:
         db = self.connect_to_mongodb()
         topic_collection = db['quizes']
         questions_vector = []
+        bglh = list(self.simple_roadmap.values())
+        # str_roadmap = json.dumps(self.simple_roadmap, ensure_ascii=False).replace("{", "{{").replace("}", "}}")
+        # print(str_roadmap)
         for question in questions:
+            # print(bglh)
             prompt = question_template.format(
                 titulo=question["titulo"],
                 questao=question["questao"],
                 imagens=', '.join(question["description_figura"]),
-                alternativas=', '.join(question["alternativas"])
+                alternativas=', '.join(question["alternativas"]),
+                roadmap=bglh
             )
 
             chain = LLMChain(
                 llm=self.llm,
                 prompt=PromptTemplate(
-                    input_variables=["titulo", "questao", "description_figura", "alternativas"],
+                    input_variables=["titulo", "questao", "description_figura", "alternativas", "roadmap"],
                     template=prompt,
                 ),
             )
@@ -253,7 +266,8 @@ class LLMlearning:
                         "titulo": question["titulo"],
                         "questao": question["questao"],
                         "imagens": question["description_figura"],
-                        "alternativas": question["alternativas"]
+                        "alternativas": question["alternativas"],
+                        "roadmap": bglh
                     })
 
                     if isinstance(response, str):
@@ -270,6 +284,8 @@ class LLMlearning:
                     
                     if alternativa_correta:
                         response["alternativa_correta"] = alternativa_correta
+                    # else:
+                    #     alternativa_correta = response['alternativa_correta']
 
                     string_json = ' '.join(response['resolucao'].replace('```python\n', '').replace('```', '').replace(',\n', ',').replace("\\", "\\\\").replace('json', "").replace("\\\"", "\"").split())
                     
@@ -279,10 +295,11 @@ class LLMlearning:
                         'titulo': response['titulo'],
                         'questao': questao_dict['questao'],
                         'explicacao': questao_dict['explicacao'],
-                        'alternativa_correta': response['alternativa_correta'],
+                        'alternativa_correta': questao_dict['alternativa_correta'],
                         'alternativas': response['alternativas'],
                         'imagens': question['imagens'],
-                        'descricao_figuras': response['imagens']
+                        'descricao_figuras': response['imagens'],
+                        'tema': questao_dict['tema']
                     }
 
                     question.update(data)
@@ -291,6 +308,7 @@ class LLMlearning:
                     topic_collection.insert_one(data)
                     break
                 except Exception as e:
+                    # print(questao_dict)
                     print(f"Erro ao processar a questão {question['titulo']}: {e}")
                     continue
         
@@ -317,7 +335,9 @@ class LLMlearning:
 if __name__ == "__main__":
     llm_learning = LLMlearning('geometria')
 
-    # quiz = llm_learning.extract_questions_from_pdf('quiz.pdf')
-    # llm_learning.send_questions_to_gemini(quiz)
 
     llm_learning.generate_roadmap()
+    quiz = llm_learning.extract_questions_from_pdf('quiz.pdf')
+    llm_learning.send_questions_to_gemini(quiz)
+
+    # print(json.dumps({"chave": {"name": "bruno"}, "chave6": {"name6": "bruno6"}}).replace("{", "{{").replace("}", "}}"))

@@ -57,7 +57,11 @@ question_template = """{titulo}\n\nQuestão: {questao}\n\nImagens: {imagens}\n\n
 
             "descricao_figuras": "..."(aquilo que for descrição das figuras, de "Descrição do gráfico" ou algo do tipo, ate "(Fim da descrição)")
             
-            "explicacao": "..." (resolução passo a passo da questão explicando o porque aquela é a alternativa correta).
+            "explicacao": "..."
+
+            "tema": "..." (qual dos seguintes temas a minha questão mais se enquadra? caso entre em mais de um topico, considere o mais dificil entre eles, deixe apenas um, apenas o texto, sem "[]": {roadmap})
+
+            "alternativa_correta": "..." (apenas a letra da alternativa correta)
 
             de forma alguma deixe a resposta entre "```(resposta)```", sempre insira virgula após cada par de chave e valor.
 
