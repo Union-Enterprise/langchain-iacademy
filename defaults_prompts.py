@@ -22,7 +22,7 @@ content = """
     O número de topicos de explicações pode variar conforme sua necessidade de explicar o tema.
 """
 
-roadmap = """gere um dicionario em python que possua todos os assuntos que caem no enem em matematica, por exemplo, no seguinte padrao: (não deixe de gerar tudo dentro da chave "conteudos")
+roadmap = """gere um dicionario em python que possua todos os assuntos que caem no enem em matematica, em ordem de dificuldade, ou seja, comece com aritmetica por exemplo, matematica basica e vá evoluindo, por exemplo, no seguinte padrao: (não deixe de gerar tudo dentro da chave "conteudos")
         conteudos: {{
             "geometria plana": {{
                 title: "Geometria Plana"

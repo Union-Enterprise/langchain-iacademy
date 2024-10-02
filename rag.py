@@ -57,6 +57,7 @@ class LLMlearning:
     def generate_from_roadmap(self, prompt=None):
         db = self.connect_to_mongodb()
         topic_collection = db['topics']
+        roadmap_collection = db['roadmap']
         default_local_prompt = prompt if prompt else content
 
         prompt_chat = ChatPromptTemplate.from_template(
@@ -105,6 +106,7 @@ class LLMlearning:
                         continue
 
             topic_collection.insert_one(self.roadmap['conteudos'][topic])
+        roadmap_collection.insert_one({"roadmap": self.simple_roadmap})
     
     def extract_text_from_pdf(self, pdf_path):
         doc = fitz.open(pdf_path)
@@ -339,5 +341,10 @@ if __name__ == "__main__":
     llm_learning.generate_roadmap()
     quiz = llm_learning.extract_questions_from_pdf('quiz.pdf')
     llm_learning.send_questions_to_gemini(quiz)
+
+
+    # pprint(llm_learning.roadmap)
+    # pprint('---')
+    # pprint(llm_learning.simple_roadmap)
 
     # print(json.dumps({"chave": {"name": "bruno"}, "chave6": {"name6": "bruno6"}}).replace("{", "{{").replace("}", "}}"))
