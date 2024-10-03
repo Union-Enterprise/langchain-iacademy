@@ -1,23 +1,26 @@
-from ia_model import llm
-# from main import models
+# from ia_model import llm
+# from main import llm
 
-def user_doubt(input_user, context, previous={"question": None, "response": None}, models={}):
+def user_doubt(input_user, previous={"question": None, "response": None}, llm=""):
     is_valid_question = llm.invoke(f'isto é uma pergunta acadêmica sobre matemática? responda apenas com as palavras "True" ou "False", apenas com a primeira letra em maiúsculo e sem pontuações. Responda "True" também se a pergunta fizer sentido no seguinte contexto: Contexto: {previous['response']} Pergunta: {input_user}').content
     if is_valid_question[0] == "T":
 
         try:
-            return models[context].ask(input_user, question_context=previous)
+            return llm.ask(input_user, question_context=previous)
         except Exception as err:
             print(err)
             return "Contexto Inválido"
     else:
         return "Por favor, pergunte algo pertinente ao conteúdo."
 
-def generate_quiz(pdf, models):
-    return models['geometria'].generate_quiz_by_pdf(pdf)
+def generate_quiz(pdf, llm):
+    return llm.generate_quiz_by_pdf(pdf)
 
-def generate_content(models):
-    return models['geometria'].generate_roadmap()
+def generate_content(llm):
+    return llm.generate_roadmap()
+
+# def generate_content_from_roadmap():
+#     return llm.generate_from_roadmap();
 
 if __name__ == '__main__':
     print(user_doubt(input_user="pode me explicar novamente o passo tres?", context='geometria',

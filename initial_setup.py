@@ -1,6 +1,6 @@
 def setup():
     from rag import LLMlearning
     
-    geometria = LLMlearning('geometria')
+    geometria = LLMlearning()
     models = {'geometria': geometria}
     return models

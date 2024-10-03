@@ -8,19 +8,15 @@ from langchain import LLMChain
 from langchain.prompts import PromptTemplate
 import ast
 import json
-# from langchain.llms import Gemini
 
 from langchain_core.prompts import ChatPromptTemplate
 from defaults_prompts import content, roadmap, question_template
 from ia_model import llm
 
-from ia_model import llm
-
 load_dotenv()
 
 class LLMlearning:
-    def __init__(self, context):
-        self.context = context
+    def __init__(self):
         self.llm = llm
         self.simple_roadmap = {}
         
