@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
-import json
 import os
 from dotenv import load_dotenv
 import re
+import json
+from werkzeug.utils import secure_filename
 
 # from initial_setup import setup
 from generation import generate_content
@@ -11,9 +12,17 @@ from rag import LLMlearning
 load_dotenv()
 
 app = Flask(__name__)
-
-
 llm = LLMlearning()
+
+UPLOAD_FOLDER = './quiz_fonts/'
+ALLOWED_EXTENSIONS = {'pdf'}
+quiz_filename = ""
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/generate_one', methods=["POST"])
 def generate_one():
@@ -43,6 +52,30 @@ def generate_one():
 def generate():
     json_string = generate_content(llm)
     return
+
+
+@app.route('/upload_quiz_pdf', methods=["POST"])
+def upload_quiz_pdf():
+    global quiz_filename 
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            print("sem arquivo")
+        file = request.files['file']
+        if file.filename == '':
+            print('sem arquivo')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            quiz_filename = filename
+            return jsonify("upload feito com sucesso")
+
+@app.route('/generate_quiz', methods=["POST"])
+def generate_quiz():
+    if quiz_filename:
+        quiz = llm.extract_questions_from_pdf(f"{app.config['UPLOAD_FOLDER']}/{quiz_filename}")
+        llm.send_questions_to_gemini(quiz)
+    else:
+        return jsonify("faça o upload do pdf"), 400
 
 
 # @app.route('/doubt', methods=["POST"])

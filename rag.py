@@ -331,7 +331,7 @@ class LLMlearning:
         return None
 
 if __name__ == "__main__":
-    llm_learning = LLMlearning('geometria')
+    llm_learning = LLMlearning()
 
 
     llm_learning.generate_roadmap()
