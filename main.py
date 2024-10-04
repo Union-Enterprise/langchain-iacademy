@@ -51,7 +51,7 @@ def generate_one():
 @app.route('/generate_content_and_roadmap', methods=["POST"])
 def generate():
     json_string = generate_content(llm)
-    return
+    return jsonify('sucesso')
 
 
 @app.route('/upload_quiz_pdf', methods=["POST"])

@@ -62,15 +62,17 @@ class LLMlearning:
             """
         )
 
+        # pprint(self.roadmap['conteudos'])
+
         for topic in list(self.roadmap['conteudos'].keys()):
             # pprint(list(self.roadmap['conteudos'][topic]['topics'].keys()))
             print(topic)
             for subject in list(self.roadmap['conteudos'][topic]['topics'].keys()):
                 print("- "+subject)
                 try:
-                    self.simple_roadmap[topic].append(subject)
+                    self.simple_roadmap[self.roadmap['conteudos'][topic]["title"]].append(subject)
                 except:
-                    self.simple_roadmap[topic] = [subject]
+                    self.simple_roadmap[self.roadmap['conteudos'][topic]["title"]] = [subject]
                 formatted_prompt = prompt_chat.format(input=f"gere tudo sobre {subject} - {topic}")
                 while True:
                     while True:
