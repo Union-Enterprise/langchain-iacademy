@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import re
 import json
 from werkzeug.utils import secure_filename
+from flask_cors import CORS
 
 # from initial_setup import setup
 from generation import generate_content
@@ -12,6 +13,7 @@ from rag import LLMlearning
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 llm = LLMlearning()
 
 UPLOAD_FOLDER = './quiz_fonts/'
