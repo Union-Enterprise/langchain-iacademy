@@ -14,10 +14,7 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
-<<<<<<< HEAD
 
-=======
->>>>>>> 9e91c647af943e507d2994915b688310d1060964
 llm = LLMlearning()
 
 UPLOAD_FOLDER = './quiz_fonts/'
