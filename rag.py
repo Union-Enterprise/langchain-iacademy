@@ -8,6 +8,7 @@ from langchain import LLMChain
 from langchain.prompts import PromptTemplate
 import ast
 import json
+from bson import ObjectId
 
 from langchain_core.prompts import ChatPromptTemplate
 from defaults_prompts import content, roadmap, question_template
@@ -25,7 +26,7 @@ class LLMlearning:
         db = client['iacademy'] 
         return db
     
-    def generate_roadmap(self):
+    def generate_roadmap(self, id):
         prompt = PromptTemplate(template=roadmap, input_variables=[])
         chain = LLMChain(llm=llm, prompt=prompt)
 
@@ -47,13 +48,15 @@ class LLMlearning:
         
         self.roadmap = json_object
         # self.simple_roadmap = self.roadmap['conteudos'].keys()
-        self.generate_from_roadmap()
+        self.generate_from_roadmap(id)
 
 
-    def generate_from_roadmap(self, prompt=None):
+    def generate_from_roadmap(self, id, prompt=None):
         db = self.connect_to_mongodb()
+        user_collection = db["users"]
         topic_collection = db['topics']
         roadmap_collection = db['roadmap']
+
         default_local_prompt = prompt if prompt else content
 
         prompt_chat = ChatPromptTemplate.from_template(
@@ -103,8 +106,22 @@ class LLMlearning:
                     except:
                         continue
 
-            topic_collection.insert_one(self.roadmap['conteudos'][topic])
-        roadmap_collection.insert_one({"roadmap": self.simple_roadmap})
+        # conteudos
+        update_operation = { "$set" : 
+            { "topics" : self.roadmap['conteudos'] }
+        }
+        result = user_collection.update_one({ "_id" : ObjectId(id) }, update_operation)
+        if result.matched_count == 0:
+            print(f"nenhum usuario com id {id}.")
+
+        #roadmap
+        update_operation = { "$set" : 
+            { "roadmap" : self.simple_roadmap }
+        }
+        result = user_collection.update_one({ "_id" : ObjectId(id) }, update_operation)
+        if result.matched_count == 0:
+            print(f"nenhum usuario com id {id}.")
+
     
     def extract_text_from_pdf(self, pdf_path):
         doc = fitz.open(pdf_path)
