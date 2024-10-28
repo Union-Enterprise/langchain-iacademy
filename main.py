@@ -12,7 +12,7 @@ from rag import LLMlearning
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='images', static_url_path='/images')
 CORS(app)
 
 llm = LLMlearning()

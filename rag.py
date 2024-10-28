@@ -158,7 +158,7 @@ class LLMlearning:
         for i, description in enumerate(descriptions):
             imagem_path = imagens[i] if i < len(imagens) else None
             if imagem_path:
-                imagem_tag = f"<imagem {imagem_path}>"
+                imagem_tag = f"\n<img src=\"http://localhost:5000/{imagem_path}>\">\n"
                 page_text = page_text.replace(description, imagem_tag)
         return page_text
 

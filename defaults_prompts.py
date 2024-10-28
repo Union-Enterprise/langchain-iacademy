@@ -69,5 +69,5 @@ question_template = """{titulo}\n\nQuestão: {questao}\n\nImagens: {imagens}\n\n
 
             caso tenha alguma descrição de imagem dentro da questão, pode mover para a chave "descricao_figuras".
 
-            não retire a minha tag <imagem _pathname_> da minha questão, ela é muito importante
+            não retire a minha tag \n\n<img src=\"http://localhost:5000/images/<any_path>\">\n da minha questão, ela é muito importante
 """
