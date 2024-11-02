@@ -14,7 +14,8 @@ content = """
         Tópico 1 de explicação: "(um texto explicativo)",
         Tópico 2 de explicação: "(um texto explicativo)",
         ...
-        Fórmulas: "(um texto explicativo juntamente com as formulas e o que cada incognita representa)"
+        Fórmulas: "(um texto explicativo juntamente com as formulas e o que cada incognita representa)",
+        images_google_search: "quadrado na geometria plana" (monte uma busca para que meu sistema obtenha isso e pesquise no google alguma imagem relacionada com o conteúdo que você está gerando, cada conteudo terá apenas uma imagem, e posição da chave "images_google_search" pode variar dentro do json, pois essa será a posição dela que será mostrada na página)
 
     Gere em média umas 5 tags que façam referencia ao conteúdo que você gerar (SEMPRE GERE AS TAGS, Não gere a tag "ENEM" nem "Matemática").
     No JSON não precisa usar "Tópico 1, Tópico 2..." como chaves, utilize o próprio título.

@@ -9,6 +9,7 @@ from langchain.prompts import PromptTemplate
 import ast
 import json
 from bson import ObjectId
+import requests
 
 from langchain_core.prompts import ChatPromptTemplate
 from defaults_prompts import content, roadmap, question_template
@@ -54,8 +55,8 @@ class LLMlearning:
     def generate_from_roadmap(self, id, prompt=None):
         db = self.connect_to_mongodb()
         user_collection = db["users"]
-        topic_collection = db['topics']
-        roadmap_collection = db['roadmap']
+        # topic_collection = db['topics']
+        # roadmap_collection = db['roadmap']
 
         default_local_prompt = prompt if prompt else content
 
@@ -94,14 +95,24 @@ class LLMlearning:
                     try:
                         tags = json_object.pop("Tags")
                         titulo = json_object.pop("Titulo")
+                        query = json_object['images_google_search']
+                        
+                        try:
+                            img_tag = f"<img href=\"{self.get_images(query)[0]}\">"
+                            json_object['images_google_search'] = img_tag
+                        except Exception as err:
+                            print(err)
+                            pass
+
                         topic_data = {
                             'title': titulo,
                             'topic': topic,
                             'content': json_object,
                             'tags': tags,
-                            'views': 0,
+                            'views': 0
                         }
                         self.roadmap['conteudos'][topic]['topics'][subject] = topic_data
+                        pprint(topic_data)
                         break
                     except:
                         continue
@@ -133,6 +144,23 @@ class LLMlearning:
 
     def clean_text(self, text):
         return re.sub(r'\s+', ' ', text).strip()
+    
+    def get_images(self, query):
+        cse_id = os.environ.get("CSE_ID")
+        api_key = os.environ.get("CUSTOM_SEARCH_API_KEY")
+        num=1
+
+        url = f"https://www.googleapis.com/customsearch/v1?q={query}&searchType=image&key={api_key}&cx={cse_id}&num={num}"
+        response = requests.get(url)
+        data = response.json()
+        
+        images = []
+        
+        if 'items' in data:
+            for item in data['items']:
+                images.append(item['link'])
+
+        return images
 
     def extract_images_from_page(self, page, question_num, save_dir='images', img_counter=0):
         os.makedirs(save_dir, exist_ok=True)
