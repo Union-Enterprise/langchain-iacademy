@@ -5,7 +5,7 @@ python main.py
 ```
 
 
-para os note do lab 6:
+para os note (veio) do lab 6:
 
 ```
 C:\Users\Admin\AppData\Local\Programs\Python\Python311\Scripts\pip install flask pymupdf langchain pymongo langchain_google_genai grpcio flask_cors python-dotenv
