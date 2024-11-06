@@ -39,16 +39,16 @@ class LLMlearning:
                 except:
                     continue
             try:
-                json_object = json.loads(content['text'])
-                json_object['conteudos']
+                json_object = json.loads(content['text'].replace("```", "").replace("json", "").replace('\n', ''))
                 break
-            except:
+            except Exception as err:
+                print(err)
                 print("ia ta moscano e n ta mandando o roadmap em json mas vai gerar dnv rlx")
                 json_object = {}
                 continue
         
         self.roadmap = json_object
-        # self.simple_roadmap = self.roadmap['conteudos'].keys()
+        # self.simple_roadmap = self.roadmap.keys()
         self.generate_from_roadmap(id)
 
 
@@ -66,60 +66,64 @@ class LLMlearning:
             """
         )
 
-        # pprint(self.roadmap['conteudos'])
+        # pprint(self.roadmap)
 
-        for topic in list(self.roadmap['conteudos'].keys()):
-            # pprint(list(self.roadmap['conteudos'][topic]['topics'].keys()))
-            print(topic)
-            for subject in list(self.roadmap['conteudos'][topic]['topics'].keys()):
-                print("- "+subject)
-                try:
-                    self.simple_roadmap[self.roadmap['conteudos'][topic]["title"]].append(subject)
-                except:
-                    self.simple_roadmap[self.roadmap['conteudos'][topic]["title"]] = [subject]
-                formatted_prompt = prompt_chat.format(input=f"gere tudo sobre {subject} - {topic}")
-                while True:
+        for topic in list(self.roadmap.keys()):
+            # pprint(list(self.roadmap[topic]['topics'].keys()))
+            pprint(self.roadmap[topic])
+            for cu in list(self.roadmap[topic]['unidades'].keys()):
+                for subject in list(self.roadmap[topic]['unidades'][cu]['topicos'].keys()):
+                    print("- "+subject+f" ({self.roadmap[topic]['unidades'][cu]["title"]})")
+                    try:
+                        self.simple_roadmap[self.roadmap[topic]['unidades'][cu]["title"]].append(subject)
+                    except:
+                        self.simple_roadmap[self.roadmap[topic]['unidades'][cu]["title"]] = [subject]
+                    formatted_prompt = prompt_chat.format(input=f"gere tudo sobre {subject} - {topic} para a unidade {self.roadmap[topic]['unidades'][cu]["title"]}")
                     while True:
+                        while True:
+                            try:
+                                response = llm.invoke(formatted_prompt)
+                                break
+                            except: 
+                                continue
                         try:
-                            response = llm.invoke(formatted_prompt)
-                            break
-                        except: 
+                            json_object = json.loads(response.content)
+                        except json.JSONDecodeError:
+                            print("ia ta moscano e n ta mandando o conteudo em json mas vai gerar dnv rlx")
+                            json_object = {}
                             continue
-                    try:
-                        json_object = json.loads(response.content)
-                    except json.JSONDecodeError:
-                        print("ia ta moscano e n ta mandando o conteudo em json mas vai gerar dnv rlx")
-                        json_object = {}
-                        continue
 
-                    try:
-                        tags = json_object.pop("Tags")
-                        titulo = json_object.pop("Titulo")
-                        query = json_object['images_google_search']
-                        
                         try:
-                            img_tag = f"<img href=\"{self.get_images(query)[0]}\">"
-                            json_object['images_google_search'] = img_tag
+                            pprint(json_object)
+
+                            tags = json_object.pop("Tags")
+                            titulo = json_object.pop("Titulo")
+                            query = json_object['images_google_search']
+                            
+                            try:
+                                img_tag = f"<img href=\"{self.get_images(query)[0]}\">"
+                                json_object['images_google_search'] = img_tag
+                            except Exception as err:
+                                print(err)
+                                pass
+
+                            topic_data = {
+                                'title': titulo,
+                                'topic': topic,
+                                'content': json_object,
+                                'tags': tags,
+                                'views': 0
+                            }
+                            self.roadmap[topic]['unidades'][cu]['topicos'][subject] = topic_data
+                            pprint(topic_data)
+                            break
                         except Exception as err:
                             print(err)
-                            pass
-
-                        topic_data = {
-                            'title': titulo,
-                            'topic': topic,
-                            'content': json_object,
-                            'tags': tags,
-                            'views': 0
-                        }
-                        self.roadmap['conteudos'][topic]['topics'][subject] = topic_data
-                        pprint(topic_data)
-                        break
-                    except:
-                        continue
+                            continue
 
         # conteudos
         update_operation = { "$set" : 
-            { "topics" : self.roadmap['conteudos'] }
+            { "topics" : self.roadmap }
         }
         result = user_collection.update_one({ "_id" : ObjectId(id) }, update_operation)
         if result.matched_count == 0:

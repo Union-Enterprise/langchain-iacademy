@@ -23,32 +23,59 @@ content = """
     O número de topicos de explicações pode variar conforme sua necessidade de explicar o tema.
 """
 
-roadmap = """gere um dicionario em python que possua todos os assuntos que caem no enem em matematica, em ordem de dificuldade, ou seja, comece com aritmetica por exemplo, matematica basica e vá evoluindo, por exemplo, no seguinte padrao: (não deixe de gerar tudo dentro da chave "conteudos")
-        conteudos: {{
-            "geometria plana": {{
-                title: "Geometria Plana"
-                topics: {{
-                    "quadrados": {{(deixe vazio)}},
-                    "triangulos": {{(deixe vazio)}}, ...
-                }}, (em ordem de dificuldade)
-                description: "a geometria plana é um assuntos que aborda as figuras bidimensionais..." (algo entre 10 linhas de conteudo),
-                tags: ["Geometria", "Áreas", "Bidimensionais" ... (umas 5 tags ou mais)],
-                level: "básico"
-            }},
-            "geometria espacial": {{
-                title: "Geometria Espacial"
-                topics: {{
-                    "cubos": {{(deixe vazio)}},
-                    "piramides": {{(deixe vazio)}},
-                    "prismas": {{(deixe vazio)}}...
-                }}, (em ordem de dificuldade)
-                description: "a geometria espacial é um assuntos que aborda as figuras tridimensionais..." (algo entre 10 linhas de conteudo),
-                tags: ["Geometria", "Volumes", "Tridimensionais" ... (umas 5 tags ou mais)],
-                level: "intermediário"
-            }}
-        }}  
-        em hipotese alguma envolva sua resposta em "``````". 
-        eu quero um json como resposta, ou seja, retire as quebras de linha.
+roadmap = """
+Gere um dicionário em Python que contenha todos os assuntos de matemática que caem no ENEM, organizados em ordem de dificuldade. Use o seguinte padrão, onde "modulosData" agrupa os conteúdos, com suas unidades e tópicos, seguindo a estrutura fornecida:
+
+conteudos = {{
+    "geometria plana": {{
+        title: "Geometria Plana",
+        description: "A geometria plana aborda figuras bidimensionais como quadrados, triângulos e outros polígonos.",
+        index: "1",
+        unidades: {{ (em ordem de dificuldade, gere tambem a quantidade que achar necessario e pode separar por si proprio, os conteudos não precisa seguir desse modelo, apenas o padrao de dado)
+            "Figuras Planas": {{
+                title: "Figuras Planas",
+                description: "Definição e características das figuras planas.",
+                topicos: {{
+                        "Quadrados": {{(deixe vazio)}},
+                        "Triângulos": {{(deixe vazio)}}, (gere a quantidade que achar necessario, por exemplo, todas as figuras planas)
+                }},
+            }}, (gere quantos achar necessario)
+            "Perímetro e Área": {{
+                title: "Perímetro e Área",
+                description: "Cálculo do perímetro e da área das principais figuras planas.",
+                topicos: {{
+                        "Cálculo do Perímetro": {{(deixe vazio)}},
+                        "Cálculo da Área": {{(deixe vazio)}}, (gere a quantidade que achar necessario, por exemplo, a area e perimetro de todas as formas geometricas planas)
+                }},
+            }}, (gere quantos achar necessario)...
+        }},
+    }},
+    "geometria espacial": {{
+        title: "Geometria Espacial",
+        description: "A geometria espacial aborda figuras tridimensionais como cubos, pirâmides e prismas.",
+        index: "2",
+        unidades: {{ (em ordem de dificuldade, gere tambem a quantidade que achar necessario e pode separar por si proprio, os conteudos não precisa seguir desse modelo, apenas o padrao de dado)
+            "Sólidos Geométricos": {{
+                title: "Sólidos Geométricos",
+                description: "Exploração das propriedades dos sólidos geométricos.",
+                topicos: {{
+                        "Cubos": {{(deixe vazio)}},
+                        "Pirâmides": {{(deixe vazio)}}, (gere a quantidade que achar necessario)
+                }},
+            }}, (gere quantos achar necessario)
+            "Volume e Área": {{
+                title: "Volume e Área",
+                description: "Cálculo do volume e da área dos principais sólidos geométricos.",
+                topicos: {{
+                        "Cálculo do Volume": {{(deixe vazio)}},
+                        "Cálculo da Área": {{(deixe vazio)}}, (gere a quantidade que achar necessario)
+                }},
+            }}, (gere quantos achar necessario)...
+        }},
+    }},
+}}
+
+Em hipótese alguma envolva sua resposta em "``````". Eu quero um JSON como resposta, ou seja, retire as quebras de linha.
 """
 
 question_template = """{titulo}\n\nQuestão: {questao}\n\nImagens: {imagens}\n\nAlternativas: {alternativas}\n\nSe já houver a alternativa correta, apenas explique a resposta com base nas informações fornecidas, caso contrário, resolva a questão e forneça a alternativa correta mencionando na explicação no exato padrão: ...'alternativa correta é b.'... ou ...'alternativa correta é c.'... e assim por diante. Além disso, tudo que puder, deixe no padrão matemático, por exemplo, caso encontre 'y é igual a 250 vezes x', converta para 'y = 250*x', o mesmo para logs, raizes, frações e outros simbolos e termos matemáticos, converta "por cento" para "%", "metros quadrados" para m², C índice 1 para C₁ etc.
