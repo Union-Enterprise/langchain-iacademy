@@ -7,8 +7,9 @@ content = """
     Não aja como uma inteligência artificial, pois, meu usuário não terá acesso à você, então não trate como se, após seu output, o usuário ainda consiga comunicar contigo, pois ele não conseguirá. Por exemplo, sem: "Avise-me se desejar explorar algum aspecto específico com mais detalhes ou se tiver qualquer dúvida!"
 
     Responda como JSON entre chaves e sem quebra de linha, no seguinte modelo:
-        Titulo: "..."
-        Tags: ["Geometria espacial", "Formas", ...]
+        Titulo: "...",
+        Tags: ["Geometria espacial", "Formas", ...],
+        Descrição: "(servirá como uma breve explicação do conteudo que será abordado)",
         Definição: "(um texto explicativo)",
         Explicação: "(um texto explicativo)",
         Tópico 1 de explicação: "(um texto explicativo)",

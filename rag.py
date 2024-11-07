@@ -98,6 +98,7 @@ class LLMlearning:
 
                             tags = json_object.pop("Tags")
                             titulo = json_object.pop("Titulo")
+                            descricao = json_object.pop("Descrição")
                             query = json_object['images_google_search']
                             
                             try:
@@ -110,6 +111,7 @@ class LLMlearning:
                             topic_data = {
                                 'title': titulo,
                                 'topic': topic,
+                                'description': descricao,
                                 'content': json_object,
                                 'tags': tags,
                                 'views': 0
