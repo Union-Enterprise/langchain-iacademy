@@ -19,6 +19,15 @@ def generate_quiz(pdf, llm):
 def generate_content(llm, id):
     return llm.generate_roadmap(id)
 
+def user_doubt(user_prompt, content, chat_history, llm):
+    response =  llm.user_doubt_content(user_prompt, content, chat_history)
+
+    if response is None:
+        print("Erro: O LLM não retornou uma resposta válida.")
+        return "Desculpe, não consegui gerar uma resposta no momento."
+
+    return response
+
 # def generate_content_from_roadmap():
 #     return llm.generate_from_roadmap();
 

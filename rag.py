@@ -383,6 +383,20 @@ class LLMlearning:
         
         return None
 
+
+    def user_doubt_content(self, user_prompt, content, chat_history):
+        from defaults_prompts import user_doubt_prompt
+
+        prompt_chat = ChatPromptTemplate.from_template(user_doubt_prompt)
+
+        formatted_prompt = prompt_chat.format(prompt=user_prompt, content=content, history=chat_history)
+
+        print(formatted_prompt)
+
+        response = llm.invoke(formatted_prompt)
+
+        return response.content
+
 if __name__ == "__main__":
     llm_learning = LLMlearning()
 
