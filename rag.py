@@ -55,8 +55,9 @@ class LLMlearning:
     def generate_from_roadmap(self, id, prompt=None):
         db = self.connect_to_mongodb()
         user_collection = db["users"]
-        # topic_collection = db['topics']
-        # roadmap_collection = db['roadmap']
+        
+        user_data = user_collection.find_one({"_id": ObjectId(id)})
+        quiz_iniciais = user_data.get("quiz_iniciais", "Sem quizzes disponíveis")
 
         default_local_prompt = prompt if prompt else content
 
@@ -66,19 +67,18 @@ class LLMlearning:
             """
         )
 
-        # pprint(self.roadmap)
-
         for topic in list(self.roadmap.keys()):
-            # pprint(list(self.roadmap[topic]['topics'].keys()))
             pprint(self.roadmap[topic])
             for cu in list(self.roadmap[topic]['unidades'].keys()):
                 for subject in list(self.roadmap[topic]['unidades'][cu]['topicos'].keys()):
-                    print("- "+subject+f" ({self.roadmap[topic]['unidades'][cu]["title"]})")
+                    print("- "+subject+f" ({self.roadmap[topic]['unidades'][cu]['title']})")
                     try:
                         self.simple_roadmap[self.roadmap[topic]['unidades'][cu]["title"]].append(subject)
                     except:
                         self.simple_roadmap[self.roadmap[topic]['unidades'][cu]["title"]] = [subject]
-                    formatted_prompt = prompt_chat.format(input=f"gere tudo sobre {subject} - {topic} para a unidade {self.roadmap[topic]['unidades'][cu]["title"]}")
+
+                    formatted_prompt = prompt_chat.format(quizzes=quiz_iniciais, input=f"gere tudo sobre {subject} - {topic} para a unidade {self.roadmap[topic]['unidades'][cu]['title']}")
+                    
                     while True:
                         while True:
                             try:

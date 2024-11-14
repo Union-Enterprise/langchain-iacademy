@@ -96,6 +96,6 @@ def generate_quiz():
 
 if __name__ == '__main__':
     SERVER_NAME = os.environ.get("SERVER_NAME", "localhost")
-    PORT = int(os.environ.get("PORT", 5000))  # Certifique-se de converter para int
+    PORT = int(os.environ.get("PORT", 5000))
 
     app.run(host=SERVER_NAME, port=PORT)

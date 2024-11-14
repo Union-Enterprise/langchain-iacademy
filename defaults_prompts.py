@@ -5,6 +5,9 @@ content = """
     Não quero um resumo básico, quero que você se aprofunde no tema e cite todos os pontos que conter no contexto.
     Você será o alimentador de um portal de trilhas de conhecimento, onde, cada tópico contém assuntos, por exemplo, dentro de "Geometria Plana", há "Quadrados", "Triângulos", "Trapézios" etc. Logo, não há a necessidade de explicar conceitos como "Teorema de Pitágoras" dentro do assunto "Quadrado", pois ele será abordado no assunto "Triângulos"
     Não aja como uma inteligência artificial, pois, meu usuário não terá acesso à você, então não trate como se, após seu output, o usuário ainda consiga comunicar contigo, pois ele não conseguirá. Por exemplo, sem: "Avise-me se desejar explorar algum aspecto específico com mais detalhes ou se tiver qualquer dúvida!"
+    Ao primeiro login do meu usuario na minha plataforma, terei um quiz inicial de algumas perguntas, irei te enviar a questão, a alternativa respondida e a alternativa correta, quando estiver gerando os conteúdos, dê uma atenção especial para aqueles conteúdos que ele errou nesse quiz (mas não tire a atenção dos outros, so deixe explicado mais detalhadamente esses que ele errou).
+
+    Quizzes: {quizzes}
 
     Responda como JSON entre chaves e sem quebra de linha, no seguinte modelo:
         Titulo: "...",
