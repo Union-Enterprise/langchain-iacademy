@@ -12,7 +12,7 @@ from bson import ObjectId
 import requests
 
 from langchain_core.prompts import ChatPromptTemplate
-from defaults_prompts import content, roadmap, question_template
+from defaults_prompts import content, roadmap, question_template, gen_quiz
 from ia_model import llm
 
 load_dotenv()
@@ -396,14 +396,48 @@ class LLMlearning:
         response = llm.invoke(formatted_prompt)
 
         return response.content
+    
+    def gen_quiz(self, qtd, tema):
+        prompt = gen_quiz.format(
+            quantidade=qtd,
+            tema=tema
+        )
+
+        chain = LLMChain(
+            llm=self.llm,
+            prompt=PromptTemplate(
+                input_variables=["quantidade", "tema"],
+                template=prompt
+            ),
+        )
+
+        while True:
+            try:
+                response = chain.invoke({
+                    "quantidade": qtd,
+                    "tema": tema,
+                })
+
+                json_object = json.loads(response['text'].replace("```", "").replace("json", "").replace('\n', ''))
+                break
+            except Exception as err:
+                print(err)
+                print("ia n ta gerando os quiz em json, mas vai gerar dnv rlx")
+                json_object = {}
+                continue
+
+        db = self.connect_to_mongodb()
+        quizes_collection = db["quizes"]
+
+        quizes_collection.insert_many(json_object)
+        return json_object
+
 
 if __name__ == "__main__":
     llm_learning = LLMlearning()
 
 
-    llm_learning.generate_roadmap()
-    quiz = llm_learning.extract_questions_from_pdf('quiz.pdf')
-    llm_learning.send_questions_to_gemini(quiz)
+    llm_learning.gen_quiz("10", "algebra")
 
 
     # pprint(llm_learning.roadmap)

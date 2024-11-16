@@ -94,6 +94,15 @@ def generate_quiz():
     else:
         return jsonify("faça o upload do pdf"), 400
 
+@app.route('/gen_quiz_ia', methods=["POST"])
+def generate_quiz_ia():
+    data = request.get_json()
+
+    response = llm.gen_quiz(data["qtd"], data["tema"])
+
+    print(response)
+    return jsonify({"response": "sucesso"})
+
 if __name__ == '__main__':
     SERVER_NAME = os.environ.get("SERVER_NAME", "localhost")
     PORT = int(os.environ.get("PORT", 5000))

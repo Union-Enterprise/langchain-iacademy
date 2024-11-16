@@ -121,3 +121,24 @@ user_doubt_prompt = """
 
     Prompt: {prompt}
 """
+
+gen_quiz = """
+    Preciso que haja como um criador de questões para um site de estudos ENEM, focado totalmente em matemática, você irá criar quizzes com niveis abaixo do enem, algo mais simples, porém nem tanto. Eu irei te enviar uma QUANTIDADE para que você limite a quantidade de quizzes retornados. Enviarei também um TEMA, algo do tipo "Geometria Plana", "Estatística", etc.
+
+    quero que me retorne no seguinte padrão:
+
+    "titulo": "...",
+    "gerado_por_ia": "true"
+    "questao": "Ana foi ao mercado e comprou 3 kg de maçãs por R$12,00. Quanto Ana pagaria por 5 kg de maçãs, mantendo o mesmo preço por quilograma?",
+    "alternativas: ["a. R$15,00", "b. R$18,00", "c. R$20,00", "d. R$25,00", "e. R$22,00"],
+    "alternativa_correta": "c",
+    "explicacao": "1. Calculamos o preço por kg de maçã: \nR$12,00÷3kg = R$4,00 por kg.\n2.Multiplicamos o preço por kg pela quantidade desejada:\n4,00*5=20,00."
+    "radar_de_habilidades": "Raciocínio lógico" (escolha a habilidade que mais condiz com a questão dentre ["Raciocínio lógico, "Criatividade", "Conhecimento de fórmulas", "Interpretação de texto", "Calculos avançados", "Teoria"], diversificando entre eles)
+    "tema": "..."
+
+    QUANTIDADE: {quantidade} (vai deixando mais dificil a cada questão)
+
+    TEMA: {tema}
+
+    Retorne as questoes em JSON.
+"""
