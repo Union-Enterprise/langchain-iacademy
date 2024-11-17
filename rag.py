@@ -12,7 +12,7 @@ from bson import ObjectId
 import requests
 
 from langchain_core.prompts import ChatPromptTemplate
-from defaults_prompts import content, roadmap, question_template, gen_quiz
+from defaults_prompts import content, roadmap, question_template, gen_quiz, gen_simulados, gen_questoes_prova
 from ia_model import llm
 
 load_dotenv()
@@ -431,13 +431,91 @@ class LLMlearning:
 
         quizes_collection.insert_many(json_object)
         return json_object
+    
+    def gen_simulados(self, tema, quantidade):
+        prompt = gen_simulados.format(
+            tema=tema
+        )
+
+        chain = LLMChain(
+            llm=self.llm,
+            prompt=PromptTemplate(
+                input_variables=["tema"],
+                template=prompt
+            ),
+        )
+
+        while True:
+            try:
+                response = chain.invoke({
+                    "tema": tema,
+                })
+
+                json_object = json.loads(response['text'].replace("```", "").replace("json", "").replace('\n', ''))
+                break
+            except Exception as err:
+                print(err)
+                print("ia n ta gerando os quiz em json, mas vai gerar dnv rlx")
+                json_object = {}
+                continue
+
+        # db = self.connect_to_mongodb()
+        # quizes_collection = db["quizes"]
+
+        # quizes_collection.insert_many(json_object)
+        pprint(json_object)
+
+        return self.gen_provas(json_object, tema, quantidade)
+    
+    def gen_provas(self, simulados_template, tema, quantidade):
+        for provas in simulados_template['provas']:
+            for c in range(int(quantidade)):
+                prompt = gen_questoes_prova.format(
+                    titulo=provas['titulo'],
+                    tema=provas['tema'],
+                    desc=provas['desc']
+                )
+
+                chain = LLMChain(
+                    llm=self.llm,
+                    prompt=PromptTemplate(
+                        input_variables=["titulo", "tema", "desc"],
+                        template=prompt
+                    ),
+                )
+
+                while True:
+                    try:
+                        response = chain.invoke({
+                            "titulo": provas['titulo'],
+                            "tema": provas['tema'],
+                            "desc": provas['desc']
+                        })
+
+                        json_object = json.loads(response['text'].replace("```", "").replace("json", "").replace('\n', ''))
+
+                        pprint(json_object)
+                        break
+                    except Exception as err:
+                        print(err)
+                        print("ia n ta gerando as questao do simulado em json, mas vai gerar dnv rlx")
+                        json_object = {}
+                        continue
+                provas['questoes'].append(json_object) # objeto da questao
+
+        db = self.connect_to_mongodb()
+        simualdos_collection = db["simulados"]
+
+        simualdos_collection.insert_one(simulados_template)
+
+        pprint(simulados_template)
+        return simulados_template
 
 
 if __name__ == "__main__":
     llm_learning = LLMlearning()
 
-
-    llm_learning.gen_quiz("10", "algebra")
+    llm_learning.gen_simulados("Estatística", 2)
 
 
     # pprint(llm_learning.roadmap)

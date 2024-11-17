@@ -103,6 +103,15 @@ def generate_quiz_ia():
     print(response)
     return jsonify({"response": "sucesso"})
 
+@app.route('/gen_simulado_ia', methods=["POST"])
+def generate_simulado_ia():
+    data = request.get_json()
+
+    response = llm.gen_simulados(data["tema"], data["qtd"])
+
+    print(response)
+    return jsonify({"response": "sucesso"})
+
 if __name__ == '__main__':
     SERVER_NAME = os.environ.get("SERVER_NAME", "localhost")
     PORT = int(os.environ.get("PORT", 5000))

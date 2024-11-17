@@ -1,0 +1,7 @@
+{{
+    "titulo": {{(deixe vazio)}},
+    "enunciado": {{(deixe vazio)}},
+    "alternativas": ["{{(deixe vazio)}}", "{{(deixe vazio)}}", "{{(deixe vazio)}}", "{{(deixe vazio)}}", "{{(deixe vazio)}}"],
+    "alternativa_correta": {{(deixe vazio)}},
+    "explicacao": {{(deixe vazio)}}
+}}

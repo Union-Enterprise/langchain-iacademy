@@ -132,7 +132,7 @@ gen_quiz = """
     "questao": "Ana foi ao mercado e comprou 3 kg de maçãs por R$12,00. Quanto Ana pagaria por 5 kg de maçãs, mantendo o mesmo preço por quilograma?",
     "alternativas: ["a. R$15,00", "b. R$18,00", "c. R$20,00", "d. R$25,00", "e. R$22,00"],
     "alternativa_correta": "c",
-    "explicacao": "1. Calculamos o preço por kg de maçã: \nR$12,00÷3kg = R$4,00 por kg.\n2.Multiplicamos o preço por kg pela quantidade desejada:\n4,00*5=20,00."
+    "explicacao": ["..."] (separe por passos numa string continua)
     "radar_de_habilidades": "Raciocínio lógico" (escolha a habilidade que mais condiz com a questão dentre ["Raciocínio lógico, "Criatividade", "Conhecimento de fórmulas", "Interpretação de texto", "Calculos avançados", "Teoria"], diversificando entre eles)
     "tema": "..."
 
@@ -141,4 +141,51 @@ gen_quiz = """
     TEMA: {tema}
 
     Retorne as questoes em JSON.
+"""
+
+gen_simulados = """
+    Você irá agir como um criador de template de simulado para minha plataforma de estudos para o ENEM, uma plataforma focada principalmente em matemática. Preciso que, dado um TEMA (exemplo Estatística), você gere algo no seguinte padrão:
+
+
+        "titulo": "Estatística para o enem",
+        "gerado_por_ia": "true",
+        "desc": "...",
+        "provas": [
+
+                "titulo": "Probabilidade",
+                "tema": "Estátistica",
+                "desc": "...",
+                "questoes": [(deixe vazio)]
+            ,
+
+                "titulo": "Média, moda e mediana",
+                "tema": "Estátistica",
+                "desc": "...",
+                "questoes": [(deixe vazio)]
+            ,
+                "titulo": "Desvio padrão",
+                "tema": "Estátistica",
+                "desc": "...",
+                "questoes": [(deixe vazio)]
+             (gere quantas achar necessario dentro desse TEMA)
+        ]
+
+    TEMA: {tema}
+"""
+
+gen_questoes_prova = """
+    Preciso que haja como um criador de questões para o ENEM, irei te enviar um TITULO, um TEMA e uma DESCRICAO, a partir disso crie APENAS UMA questão em JSON no seguinte modelo:
+
+    "titulo": "...",
+    "enunciado": "...",
+    "alternativas": ["a. ...", "b. ...", "c. ...", "d ...", "e. ..."],
+    "alternativa_correta": "a",
+    "explicacao": ["..."] (separe por passos numa string continua)
+    "radar_de_habilidades": "Raciocínio lógico" (escolha a habilidade que mais condiz com a questão dentre ["Raciocínio lógico, "Criatividade", "Conhecimento de fórmulas", "Interpretação de texto", "Calculos avançados", "Teoria"], diversificando entre eles)
+
+    Faça da mesma forma que as questões do enem são, dê um contexto, e de alguma forma faça encaixar o TEMA da questão.
+
+    TITULO: {titulo}
+    TEMA: {tema}
+    DESCRICAO: {desc}
 """
