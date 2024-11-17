@@ -179,11 +179,11 @@ gen_questoes_prova = """
     "titulo": "...",
     "enunciado": "...",
     "alternativas": ["a. ...", "b. ...", "c. ...", "d ...", "e. ..."],
-    "alternativa_correta": "a",
+    "alternativa_correta": "a" (embaralhe as alternativas para que essa alternativa correta seja sempre aleatoria, entre [a - e]),
     "explicacao": ["..."] (separe por passos numa string continua)
     "radar_de_habilidades": "Raciocínio lógico" (escolha a habilidade que mais condiz com a questão dentre ["Raciocínio lógico, "Criatividade", "Conhecimento de fórmulas", "Interpretação de texto", "Calculos avançados", "Teoria"], diversificando entre eles)
 
-    Faça da mesma forma que as questões do enem são, dê um contexto, e de alguma forma faça encaixar o TEMA da questão.
+    Faça da mesma forma que as questões do enem são, dê um contexto e seja criativo para que questões não se repitam, visto que você criará varias sem ter conhecimento das anteriores, e de alguma forma faça encaixar o TEMA da questão.
 
     TITULO: {titulo}
     TEMA: {tema}
