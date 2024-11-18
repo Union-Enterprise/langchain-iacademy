@@ -357,6 +357,7 @@ class LLMlearning:
                     questions_vector.append(data)
 
                     topic_collection.insert_one(data)
+                    print(data)
                     break
                 except Exception as e:
                     # print(questao_dict)
