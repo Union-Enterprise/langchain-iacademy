@@ -179,7 +179,7 @@ gen_questoes_prova = """
     "titulo": "...",
     "enunciado": "...",
     "alternativas": ["a. ...", "b. ...", "c. ...", "d ...", "e. ..."],
-    "alternativa_correta": "a" (embaralhe as alternativas para que essa alternativa correta seja sempre aleatoria, entre [a - e]),
+    "alternativa_correta": "<apenas a letra da alternativa correta, ex "a", "b", "c", "d", ou "e">" (embaralhe as alternativas para que essa alternativa correta seja sempre aleatoria, entre [a - e]),
     "explicacao": ["..."] (separe por passos numa string continua)
     "radar_de_habilidades": "Raciocínio lógico" (escolha a habilidade que mais condiz com a questão dentre ["Raciocínio lógico, "Criatividade", "Conhecimento de fórmulas", "Interpretação de texto", "Calculos avançados", "Teoria"], diversificando entre eles)
 
