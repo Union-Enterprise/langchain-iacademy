@@ -85,11 +85,11 @@ def upload_quiz_pdf():
         else:
             return jsonify({"error": "Tipo de arquivo não permitido."}), 400
 
-@app.route('/generate_quiz', methods=["POST"])
-def generate_quiz():
+@app.route('/generate_quiz/<id>/<titulo>/<tema>', methods=["POST"])
+def generate_quiz(id, titulo, tema):
     if quiz_filename:
         quiz = llm.extract_questions_from_pdf(f"{app.config['UPLOAD_FOLDER']}/{quiz_filename}")
-        llm.send_questions_to_gemini(quiz)
+        llm.send_questions_to_gemini(quiz, id, titulo, tema)
         return jsonify("Quiz gerado com sucesso")
     else:
         return jsonify("faça o upload do pdf"), 400

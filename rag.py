@@ -286,15 +286,29 @@ class LLMlearning:
         questions = self.extract_questions_from_pdf(pdf_path)
         return questions
 
-    def send_questions_to_gemini(self, questions):
+    def send_questions_to_gemini(self, questions, id, titulo, tema):
         db = self.connect_to_mongodb()
-        topic_collection = db['quizes']
+        
+        simulados_collection = db['simulados']
+
+        result = simulados_collection.update_one(
+            {"_id": ObjectId(id)},
+            {"$push": {"provas": {
+                "titulo": titulo,
+                "tema": tema,
+                "questoes": []
+            }}}
+        )
+
+        print(result)
+
+
         questions_vector = []
         bglh = list(self.simple_roadmap.values())
         # str_roadmap = json.dumps(self.simple_roadmap, ensure_ascii=False).replace("{", "{{").replace("}", "}}")
         # print(str_roadmap)
         for question in questions:
-            # print(bglh)
+            print(question)
             prompt = question_template.format(
                 titulo=question["titulo"],
                 questao=question["questao"],
@@ -342,21 +356,41 @@ class LLMlearning:
                     
                     questao_dict = json.loads(string_json)
 
-                    data = {
-                        'titulo': response['titulo'],
-                        'questao': questao_dict['questao'],
-                        'explicacao': questao_dict['explicacao'],
-                        'alternativa_correta': questao_dict['alternativa_correta'],
-                        'alternativas': response['alternativas'],
-                        'imagens': question['imagens'],
-                        'descricao_figuras': response['imagens'],
-                        'tema': questao_dict['tema']
-                    }
+                    if question['imagens']:
+                        data = {
+                            'titulo': response['titulo'],
+                            'enunciado': questao_dict['enunciado'],
+                            'explicacao': questao_dict['explicacao'],
+                            'alternativa_correta': questao_dict['alternativa_correta'],
+                            'alternativas': response['alternativas'],
+                            'imagem': list(question['imagens'])[0],
+                            'radar_de_habilidades': questao_dict['radar_de_habilidades']
+                        }
+                    else:
+                        data = {
+                            'titulo': response['titulo'],
+                            'enunciado': questao_dict['enunciado'],
+                            'explicacao': questao_dict['explicacao'],
+                            'alternativa_correta': questao_dict['alternativa_correta'],
+                            'alternativas': response['alternativas'],
+                            'radar_de_habilidades': questao_dict['radar_de_habilidades']
+                        }
 
                     question.update(data)
                     questions_vector.append(data)
 
-                    topic_collection.insert_one(data)
+                    result = simulados_collection.update_one(
+                        {
+                            "_id": ObjectId(id), 
+                            "provas.titulo": titulo 
+                        },
+                        {
+                            "$push": {
+                                "provas.$.questoes": data 
+                            }
+                        }
+                    )
+                    # topic_collection.insert_one(data)
                     print(data)
                     break
                 except Exception as e:

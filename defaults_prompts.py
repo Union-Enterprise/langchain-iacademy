@@ -85,23 +85,18 @@ Em hipótese alguma envolva sua resposta em "``````". Eu quero um JSON como resp
 question_template = """{titulo}\n\nQuestão: {questao}\n\nImagens: {imagens}\n\nAlternativas: {alternativas}\n\nSe já houver a alternativa correta, apenas explique a resposta com base nas informações fornecidas, caso contrário, resolva a questão e forneça a alternativa correta mencionando na explicação no exato padrão: ...'alternativa correta é b.'... ou ...'alternativa correta é c.'... e assim por diante. Além disso, tudo que puder, deixe no padrão matemático, por exemplo, caso encontre 'y é igual a 250 vezes x', converta para 'y = 250*x', o mesmo para logs, raizes, frações e outros simbolos e termos matemáticos, converta "por cento" para "%", "metros quadrados" para m², C índice 1 para C₁ etc.
     retorne um dicionario python no seguinte padrao: 
 
-            "questao": "...", (questão corrigida no quesito dos termos matemáticos, eg. 'y é igual a 250 vezes x', converta para 'y = 250*x')
-
+            "enunciado": "...", (questão corrigida no quesito dos termos matemáticos, eg. 'y é igual a 250 vezes x', converta para 'y = 250*x')
             "descricao_figuras": "..."(aquilo que for descrição das figuras, de "Descrição do gráfico" ou algo do tipo, ate "(Fim da descrição)")
-            
             "explicacao": "..."
-
             "tema": "..." (qual dos seguintes temas a minha questão mais se enquadra? caso entre em mais de um topico, considere o mais dificil entre eles, deixe apenas um, apenas o texto, sem "[]": {roadmap})
-
             "alternativa_correta": "..." (apenas a letra da alternativa correta)
+            "radar_de_habilidades": "Raciocínio lógico" (escolha a habilidade que mais condiz com a questão dentre ["Raciocínio lógico, "Criatividade", "Conhecimento de fórmulas", "Interpretação de texto", "Calculos avançados", "Teoria"], diversificando entre eles)
+            "imagem": "<img src=\"http://localhost:5000/images/<any_path>\">"
 
             de forma alguma deixe a resposta entre "```(resposta)```", sempre insira virgula após cada par de chave e valor.
 
             caso uma questão nao seja uma pergunta (não terminar com "?"), finalize-a com ":" (ainda dentro da string da questão), para representar uma questão.
 
-            caso tenha alguma descrição de imagem dentro da questão, pode mover para a chave "descricao_figuras".
-
-            não retire a minha tag \n\n<img src=\"http://localhost:5000/images/<any_path>\">\n da minha questão, ela é muito importante
 """
 
 user_doubt_prompt = """
@@ -178,8 +173,8 @@ gen_questoes_prova = """
 
     "titulo": "...",
     "enunciado": "...",
-    "alternativas": ["a. ...", "b. ...", "c. ...", "d ...", "e. ..."],
-    "alternativa_correta": "<apenas a letra da alternativa correta, ex "a", "b", "c", "d", ou "e">" (sempre deixe em ordem alfabetica)
+    "alternativas": ["a. ...", "b. ...", "c. ...", "d ...", "e. ..."], (sempre deixe em ordem alfabetica)
+    "alternativa_correta": "<apenas a letra da alternativa correta, ex "a", "b", "c", "d", ou "e">" 
     "explicacao": ["..."] (separe por passos numa string continua)
     "radar_de_habilidades": "Raciocínio lógico" (escolha a habilidade que mais condiz com a questão dentre ["Raciocínio lógico, "Criatividade", "Conhecimento de fórmulas", "Interpretação de texto", "Calculos avançados", "Teoria"], diversificando entre eles)
 
